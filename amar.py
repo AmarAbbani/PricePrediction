@@ -2,12 +2,6 @@ import streamlit as st
 import pandas as pd
 import pickle
 import os
-#import dotenv
-#dotenv.load_dotenv('.env')
-#from sklearn.ensemble import RandomForestClassifier
-# Load the order dataset
-
-crew_edit_data = pd.read_csv("crew-edit-preprocessed.csv")
 
 # Define custom CSS styles
 custom_css = """
