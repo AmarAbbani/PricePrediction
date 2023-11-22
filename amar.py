@@ -194,7 +194,7 @@ def main():
         st.write("**Average Pricing by Segment:**")
         st.write("This graph shows the average pricing for each segment.")
 
-        if menu == "Crew-Edit Price Prediction":
+    if menu == "Crew-Edit Price Prediction":
             
             st.markdown(custom_css, unsafe_allow_html=True)
             st.markdown('<p class="title"> Crew-Edit Price Prediction </p>', unsafe_allow_html=True)
