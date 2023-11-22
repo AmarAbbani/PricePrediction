@@ -201,195 +201,185 @@ def main():
         st.write("This graph shows the average pricing for each segment.")
 
         if menu == "Crew-Edit Price Prediction":
-        st.markdown(custom_css, unsafe_allow_html=True)
-        st.markdown('<p class="title"> Crew-Edit Price Prediction </p>', unsafe_allow_html=True)
-        def create_format_dataframe(user_choice):
-            # Define the formats
-            all_formats = ['Format_MP4-HD', 'Format_MXF', 'Format_MXF OP1A', 'Format_MXF-HD 50i', 'Format_No format']
-
-            # Create a dictionary with zeros for all formats
-            data = {format_choice: 0 for format_choice in all_formats}
-
-            # Set the chosen format to 1
-            data[user_choice] = 1
-
-            # Create a dataframe from the dictionary
-            df = pd.DataFrame([data])
-            return df
-       
-       
-        def create_access_dataframe(user_choice):
-            # Define the formats
-            all_other_Access = ['Others Acces_No Acces', 'Others Acces_Pro-X', 'Others Acces_Torch']
-
-            # Create a dictionary with zeros for all formats
-            data = {other_Access_choice: 0 for other_Access_choice in all_other_Access}
-
-            # Set the chosen format to 1
-            data[user_choice] = 1
-
-            # Create a dataframe from the dictionary
-            df = pd.DataFrame([data])
-            return df
-        
-        def create_truck_dataframe(user_choice):
-            # Define the formats
-            all_trucks = ['Truck_Nissan Sunny', 'Truck_Nissan X.Trail', 'ruck_Renault Duster', 'Truck_Suzuki Cias', 'Truck_other Truck']
-
-            # Create a dictionary with zeros for all formats
-            data = {truck_choice: 0 for truck_choice in all_trucks}
-
-            # Set the chosen format to 1
-            data[user_choice] = 1
-
-            # Create a dataframe from the dictionary
-            df = pd.DataFrame([data])
-            return df
-        
-        
-        def create_client_dataframe(user_choice):
-            # Define the formats
-            all_clients = ['Client_bbc arabic', 'Client_beirutsat', 'Client_bloomberg asharq', 'Client_byblos medya', 'Client_newstime','Client_priyanka cgtn','Client_russia today']
-
-            # Create a dictionary with zeros for all formats
-            data = {client_choice: 0 for client_choice in all_clients}
-
-            # Set the chosen format to 1
-            data[user_choice] = 1
-
-            # Create a dataframe from the dictionary
-            df = pd.DataFrame([data])
-            return df
-        
-        def display_choice_result(choice):
-            if choice == 1:
-                st.write("Yes")
-
-            else:
-                st.write("No")
-
-        
-        # Get user input for a binary value (0 or 1) using a slider
-        four_G = st.sidebar.slider("Select 0 or 1 for 4G: ", min_value=0, max_value=1, step=1)
-        st.write("**You chose for the 4G feature:**")
-        display_choice_result(four_G)
-        
-        reporter = st.sidebar.slider("Select 0 or 1 for Reporter: ", min_value=0, max_value=1, step=1)
-        st.write("**You chose for the reporter feature:**")
-        display_choice_result(reporter)
-        
-        crew_Duration = st.sidebar.number_input("Enter a non-negative integer for Crew duration:", min_value=0, step=1)
-        st.write("**You chose for the Crew Duration feature:**")
-        st.write(crew_Duration)
-        
-        edit_Duration = st.sidebar.number_input("Enter a non-negative integer for Edit duration:", min_value=0, step=1)
-        st.write("**You chose for the Edit Duration feature:**")
-        st.write(edit_Duration)
-        
-        daysOfWeek = st.sidebar.slider("Select a number between 0 and 6 for Days of Week:", min_value=0, max_value=6, step=1)
-        # Call the function to display the selected day of the week
-        display_day_of_week(daysOfWeek)
-
-        
-        report_Duration = st.sidebar.number_input("Enter a non-negative integer for Report duration:", min_value=0, step=1)
-        st.write("**You chose for the Report Duration feature in seconds:**")
-        st.write(report_Duration)
-       
-        client = st.sidebar.selectbox('Client',('Client_bbc arabic','Client_beirutsat','Client_bloomberg asharq','Client_byblos medya','Client_newstime','Client_priyanka cgtn','Client_russia today'))
-        st.write("**You chose for the Client feature:**")
-        st.write(client)
-        df_client= create_client_dataframe(client)
-        #st.write("Encoded Client DataFrame:")
-        #st.write(df_client)
-        
-        truck = st.sidebar.selectbox('Truck',('Truck_Nissan Sunny','Truck_Nissan X.Trail','Truck_Renault Duster','Truck_Suzuki Cias','Truck_other Truck'))
-        st.write("**You chose for the Truck feature:**")
-        st.write(truck)
-        df_truck = create_truck_dataframe(truck)
-        #st.write("Encoded Truck DataFrame:")
-        #st.write(df_truck)
-        
-        other_Access = st.sidebar.selectbox('Others Access',('Others Acces_No Acces','Others Acces_Pro-X','Others Acces_Torch'))
-        st.write("**You chose for the Other Access feature:**")
-        st.write(other_Access)
-        df_access = create_access_dataframe(other_Access)
-        #st.write("Encoded Access DataFrame:")
-        #st.write(df_access)
-        
-        format = st.sidebar.selectbox('Format',('Format_MP4-HD','Format_MXF','Format_MXF OP1A','Format_MXF-HD 50i','Format_No format'))
-        st.write("**You chose for the Format feature:**")
-        st.write(format)
-        df_format = create_format_dataframe(format)
-        #st.write("Encoded Format DataFrame:")
-        #st.write(df_format)
-        
-        
-        data = { '4G' : four_G,
-                'Reporter': reporter,
-                 'Crew Duration' : crew_Duration,
-                 'edit duration': edit_Duration,
-                 'DayOfWeek': daysOfWeek,
-                 'Report Duration' : report_Duration,
-                 
-                 'Client_bbc arabic': df_client.iloc[0, 0],
-                 'Client_beirutsat':df_client.iloc[0, 1], 
-                 'Client_bloomberg asharq':df_client.iloc[0, 2],
-                 'Client_byblos medya': df_client.iloc[0, 3],
-                 'Client_newstime': df_client.iloc[0, 4], 
-                 'Client_priyanka cgtn': df_client.iloc[0, 5],
-                 'Client_russia today': df_client.iloc[0, 6],
+            
+            st.markdown(custom_css, unsafe_allow_html=True)
+            st.markdown('<p class="title"> Crew-Edit Price Prediction </p>', unsafe_allow_html=True)
+            def create_format_dataframe(user_choice):
+                # Define the formats
+                all_formats = ['Format_MP4-HD', 'Format_MXF', 'Format_MXF OP1A', 'Format_MXF-HD 50i', 'Format_No format']
+    
+                # Create a dictionary with zeros for all formats
+                data = {format_choice: 0 for format_choice in all_formats}
+    
+                # Set the chosen format to 1
+                data[user_choice] = 1
+    
+                # Create a dataframe from the dictionary
+                df = pd.DataFrame([data])
+                return df
+           
+           
+            def create_access_dataframe(user_choice):
+                # Define the formats
+                all_other_Access = ['Others Acces_No Acces', 'Others Acces_Pro-X', 'Others Acces_Torch']
+    
+                # Create a dictionary with zeros for all formats
+                data = {other_Access_choice: 0 for other_Access_choice in all_other_Access}
+    
+                # Set the chosen format to 1
+                data[user_choice] = 1
+    
+                # Create a dataframe from the dictionary
+                df = pd.DataFrame([data])
+                return df
+            
+            def create_truck_dataframe(user_choice):
+                # Define the formats
+                all_trucks = ['Truck_Nissan Sunny', 'Truck_Nissan X.Trail', 'ruck_Renault Duster', 'Truck_Suzuki Cias', 'Truck_other Truck']
+    
+                # Create a dictionary with zeros for all formats
+                data = {truck_choice: 0 for truck_choice in all_trucks}
+    
+                # Set the chosen format to 1
+                data[user_choice] = 1
+    
+                # Create a dataframe from the dictionary
+                df = pd.DataFrame([data])
+                return df
+            
+            
+            def create_client_dataframe(user_choice):
+                # Define the formats
+                all_clients = ['Client_bbc arabic', 'Client_beirutsat', 'Client_bloomberg asharq', 'Client_byblos medya', 'Client_newstime','Client_priyanka cgtn','Client_russia today']
+    
+                # Create a dictionary with zeros for all formats
+                data = {client_choice: 0 for client_choice in all_clients}
+    
+                # Set the chosen format to 1
+                data[user_choice] = 1
+    
+                # Create a dataframe from the dictionary
+                df = pd.DataFrame([data])
+                return df
+            
+            def display_choice_result(choice):
+                if choice == 1:
+                    st.write("Yes")
+    
+                else:
+                    st.write("No")
+    
+            
+            # Get user input for a binary value (0 or 1) using a slider
+            four_G = st.sidebar.slider("Select 0 or 1 for 4G: ", min_value=0, max_value=1, step=1)
+            st.write("**You chose for the 4G feature:**")
+            display_choice_result(four_G)
+            
+            reporter = st.sidebar.slider("Select 0 or 1 for Reporter: ", min_value=0, max_value=1, step=1)
+            st.write("**You chose for the reporter feature:**")
+            display_choice_result(reporter)
+            
+            crew_Duration = st.sidebar.number_input("Enter a non-negative integer for Crew duration:", min_value=0, step=1)
+            st.write("**You chose for the Crew Duration feature:**")
+            st.write(crew_Duration)
+            
+            edit_Duration = st.sidebar.number_input("Enter a non-negative integer for Edit duration:", min_value=0, step=1)
+            st.write("**You chose for the Edit Duration feature:**")
+            st.write(edit_Duration)
+            
+            daysOfWeek = st.sidebar.slider("Select a number between 0 and 6 for Days of Week:", min_value=0, max_value=6, step=1)
+            # Call the function to display the selected day of the week
+            display_day_of_week(daysOfWeek)
+    
+            
+            report_Duration = st.sidebar.number_input("Enter a non-negative integer for Report duration:", min_value=0, step=1)
+            st.write("**You chose for the Report Duration feature in seconds:**")
+            st.write(report_Duration)
+           
+            client = st.sidebar.selectbox('Client',('Client_bbc arabic','Client_beirutsat','Client_bloomberg asharq','Client_byblos medya','Client_newstime','Client_priyanka cgtn','Client_russia today'))
+            st.write("**You chose for the Client feature:**")
+            st.write(client)
+            df_client= create_client_dataframe(client)
+            #st.write("Encoded Client DataFrame:")
+            #st.write(df_client)
+            
+            truck = st.sidebar.selectbox('Truck',('Truck_Nissan Sunny','Truck_Nissan X.Trail','Truck_Renault Duster','Truck_Suzuki Cias','Truck_other Truck'))
+            st.write("**You chose for the Truck feature:**")
+            st.write(truck)
+            df_truck = create_truck_dataframe(truck)
+            
+            other_Access = st.sidebar.selectbox('Others Access',('Others Acces_No Acces','Others Acces_Pro-X','Others Acces_Torch'))
+            st.write("**You chose for the Other Access feature:**")
+            st.write(other_Access)
+            df_access = create_access_dataframe(other_Access)
+            
+            format = st.sidebar.selectbox('Format',('Format_MP4-HD','Format_MXF','Format_MXF OP1A','Format_MXF-HD 50i','Format_No format'))
+            st.write("**You chose for the Format feature:**")
+            st.write(format)
+            df_format = create_format_dataframe(format)
+            
+            data = { '4G' : four_G,
+                    'Reporter': reporter,
+                     'Crew Duration' : crew_Duration,
+                     'edit duration': edit_Duration,
+                     'DayOfWeek': daysOfWeek,
+                     'Report Duration' : report_Duration,
                      
-                 'Truck_Nissan Sunny': df_truck.iloc[0, 0],
-                 'Truck_Nissan X.Trail': df_truck.iloc[0, 1],
-                 'Truck_Renault Duster': df_truck.iloc[0, 2],
-                 'Truck_Suzuki Cias': df_truck.iloc[0, 3],
-                 'Truck_other Truck': df_truck.iloc[0, 4],
-                 
-                 'Others Acces_No Acces':df_access.iloc[0, 0],
-                 'Others Acces_Pro-X':df_access.iloc[0, 1],
-                 'Others Acces_Torch': df_access.iloc[0, 2],
-                 
-                 'Format_MP4-HD': df_format.iloc[0, 0],
-                 'Format_MXF': df_format.iloc[0, 1],
-                 'Format_MXF OP1A': df_format.iloc[0, 2],
-                 'Format_MXF-HD 50i': df_format.iloc[0, 3],
-                 'Format_No format': df_format.iloc[0, 4]
-                      
-        }
-        features = pd.DataFrame(data,index = [0])
-        #st.write(features)
-        
-        crew_edit_raw= pd.read_csv('crew-edit-preprocessed.csv')
-        #st.write(crew_edit_raw.head(1))
-        crew_edit_raw.drop(columns=['Unnamed: 0'], inplace=True)
-        # Display the first row of the dataset
-        #st.write("First Row of the Dataset:")
-        #st.write(crew_edit_raw.head(1))
-        crew_edit = crew_edit_raw.drop(columns=['Price'])
-        #st.write("First Row of the Dataset after removing price column:")
-        #st.write(crew_edit.head(1))
-        df = pd.concat([features,crew_edit],axis=0)
-        df = df.fillna(0)
-        #st.write("First Row of the Dataset after combining:")
-        #st.write(df.head(1))
-        #st.write(df.tail(1))
-
-        
-        # Reads in saved classification model
-        load_clf = pickle.load(open('best_rf_reg.pkl', 'rb'))
-        
-        # Apply model to make predictions
-        prediction = load_clf.predict(df) 
-        
-        # Extract the predicted price
-        predicted_price = prediction[0]
-
-        # Display the extracted predicted price
-        st.write("")
-        st.write("**Your Predicted Price for Crew-Edit chosen the above features is:**")
-        st.write(predicted_price)
+                     'Client_bbc arabic': df_client.iloc[0, 0],
+                     'Client_beirutsat':df_client.iloc[0, 1], 
+                     'Client_bloomberg asharq':df_client.iloc[0, 2],
+                     'Client_byblos medya': df_client.iloc[0, 3],
+                     'Client_newstime': df_client.iloc[0, 4], 
+                     'Client_priyanka cgtn': df_client.iloc[0, 5],
+                     'Client_russia today': df_client.iloc[0, 6],
+                         
+                     'Truck_Nissan Sunny': df_truck.iloc[0, 0],
+                     'Truck_Nissan X.Trail': df_truck.iloc[0, 1],
+                     'Truck_Renault Duster': df_truck.iloc[0, 2],
+                     'Truck_Suzuki Cias': df_truck.iloc[0, 3],
+                     'Truck_other Truck': df_truck.iloc[0, 4],
+                     
+                     'Others Acces_No Acces':df_access.iloc[0, 0],
+                     'Others Acces_Pro-X':df_access.iloc[0, 1],
+                     'Others Acces_Torch': df_access.iloc[0, 2],
+                     
+                     'Format_MP4-HD': df_format.iloc[0, 0],
+                     'Format_MXF': df_format.iloc[0, 1],
+                     'Format_MXF OP1A': df_format.iloc[0, 2],
+                     'Format_MXF-HD 50i': df_format.iloc[0, 3],
+                     'Format_No format': df_format.iloc[0, 4]
+                          
+            }
+            features = pd.DataFrame(data,index = [0])
 
             
+            crew_edit_raw= pd.read_csv('crew-edit-preprocessed.csv')
+
+            crew_edit_raw.drop(columns=['Unnamed: 0'], inplace=True)
+
+  
+
+            crew_edit = crew_edit_raw.drop(columns=['Price'])
+
+
+            df = pd.concat([features,crew_edit],axis=0)
+            df = df.fillna(0)
+            
+            # Reads in saved classification model
+            load_clf = pickle.load(open('best_rf_reg.pkl', 'rb'))
+            
+            # Apply model to make predictions
+            prediction = load_clf.predict(df) 
+            
+            # Extract the predicted price
+            predicted_price = prediction[0]
+    
+            # Display the extracted predicted price
+            st.write("")
+            st.write("**Your Predicted Price for Crew-Edit chosen the above features is:**")
+            st.write(predicted_price)
+    
+                
     if menu == "Production Price Prediction":
         
         def display_choice_result(choice):
@@ -522,8 +512,6 @@ def main():
         st.write("**You chose for the Client feature:**")
         st.write(Client)
         df_client = create_client_dataframe(Client)
-        #st.write("Encoded client DataFrame:")
-        #st.write(df_client)
         
         Distance_Category = st.sidebar.slider("Select a number between 0 and 2 for Distance_Category:", min_value=0, max_value=2, step=1)
         st.write(f"**You chose {Distance_Category} for the Distance_Category feature:**")
@@ -570,24 +558,16 @@ def main():
                       
         }
         features = pd.DataFrame(data,index = [0])
-        #st.write(features)
         
         production_raw= pd.read_csv('production-preprocessed.csv')
-        #st.write(production_raw.head(1))
+
         production_raw.drop(columns=['Unnamed: 0'], inplace=True)
-        # Display the first row of the dataset
-        #st.write("First Row of the Dataset:")
-        #st.write(production_raw.head(1))
+        
         production = production_raw.drop(columns=['Price'])
-        #st.write("First Row of the Dataset after removing price column:")
-        #st.write(production.head(1))
+
         df = pd.concat([features,production],axis=0)
         df = df.fillna(0)
-        #st.write("First Row of the Dataset after combining:")
-        #st.write(df.head(1))
-        #st.write(df.tail(1))
-
-        
+ 
         # Reads in saved classification model
         load_clf = pickle.load(open('best_ridge_reg_production.pkl', 'rb'))
         
@@ -804,27 +784,19 @@ def main():
         st.write("**You chose for the Txp feature:**")
         st.write(Txp)
         df_Txp = create_txp_dataframe(Txp)
-        #st.write("Encoded Txp DataFrame:")
-        #st.write(df_Txp)
         
-
         Camera = st.sidebar.selectbox('Camera',('Camera_Canon C305','Camera_Canon XF305','Camera_Sony HDV270','Camera_Sony S150','Camera_Sony XDcam'
                                         ,'Camera_Sony XDcam X150','Camera_Sony XDcam X190','Camera_Sony XDcam X320'))
         
-
         st.write("**You chose for the Camera feature:**")
         st.write(Camera)
         df_Camera = create_camera_dataframe(Camera)
-        #st.write("Encoded Camera DataFrame:")
-        #st.write(df_Camera)
         
         Sat_Charges = st.sidebar.selectbox('Sat Charges',('Sat Charges Paid_ISOL','Sat Charges Paid_No Sat Charges'))
 
         st.write("**You chose for the Sat Charges feature:**")
         st.write(Sat_Charges)
         df_Sat_Charges = create_sat_charges_dataframe(Sat_Charges)
-        #st.write("Encoded Sat Charges DataFrame:")
-        #st.write(df_Sat_Charges)
         
         
         data = { 'Client' : Client,
@@ -879,24 +851,14 @@ def main():
                       
         }
         features = pd.DataFrame(data,index = [0])
-        #st.write(features)
-        
+
         transmission_raw= pd.read_csv('transmission-preprocessed.csv')
-        #st.write(transmission_raw.head(1))
         transmission_raw.drop(columns=['Unnamed: 0'], inplace=True)
-        #Display the first row of the dataset
-        #st.write("First Row of the Dataset:")
-        #st.write(transmission_raw.head(1))
         transmission = transmission_raw.drop(columns=['Pricing'])
-        #st.write("First Row of the Dataset after removing price column:")
-        #st.write(transmission.head(1))
+
         df = pd.concat([features,transmission],axis=0)
         df = df.fillna(0)
-        #st.write("First Row of the Dataset after combining:")
-        #st.write(df.head(1))
-        #st.write(df.tail(1))
 
-        
         # Reads in saved classification model
         load_clf = pickle.load(open('best_rf_reg_transmission.pkl', 'rb'))
         
