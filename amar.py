@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 import pickle
 import os
-import dotenv
-dotenv.load_dotenv('.env')
+#import dotenv
+#dotenv.load_dotenv('.env')
 from sklearn.ensemble import RandomForestClassifier
 # Load the order dataset
 
