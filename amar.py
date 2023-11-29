@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import pickle
 import os
+from sklearn.ensemble import RandomForestClassifier
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Define custom CSS styles
 custom_css = """
@@ -108,39 +111,126 @@ def main():
         st.markdown(custom_css, unsafe_allow_html=True)
         st.markdown('<p class="title"> Crew-Edit EDA </p>', unsafe_allow_html=True)
         st.write("")
-        st.image("crew1.png", caption="Distribution of Jobs Across Clients", use_column_width=True)
-        st.write("The bar plot above showcases the number of jobs per client. The length of the bars clearly indicates which clients are bringing in the most work. ")
-        st.write("")  # This adds an empty line
-        st.write("")
-        st.image("crew2.png", caption="Distribution of Jobs by Type", use_column_width=True)
-        st.write("The bar plot above visualizes the distribution of jobs by their type, showing the frequency of each service type offered by the company. ")
-        st.write("")  # This adds an empty line
-        st.write("")
-        st.image("crew3.png", caption="Jobs Trend Over Time", use_column_width=True)
+
+
+        # Load data
+        data = pd.read_csv("crew-edit.csv")
+
+        # Setting the aesthetic style of the plots
+        sns.set(style="whitegrid")
+        # Sidebar with user input
+        st.sidebar.header("Filter Options")
+        st.sidebar.header("Distribution of Jobs Across Clients")
+        num_clients_to_display = st.sidebar.slider("Number of Clients to Display", min_value=1, max_value=len(data['Client'].unique()), value=5)
+        selected_clients = st.sidebar.multiselect("Select Clients", data['Client'].unique(), default=data['Client'].unique()[:num_clients_to_display])
+        if not selected_clients:
+            st.error("Please choose at least one client.")
+        else:
+            # Filter data based on user input
+            filtered_data = data[data['Client'].isin(selected_clients)]
+            # Setting the aesthetic style of the plots
+            sns.set(style="whitegrid")
+            # Distribution of jobs across clients
+            client_distribution = filtered_data['Client'].value_counts()
+            fig1, ax1 = plt.subplots(figsize=(10, 6))
+            sns.barplot(x=client_distribution.values, y=client_distribution.index, palette="viridis", ax=ax1)
+            ax1.set_title('Distribution of Jobs Across Selected Clients')
+            ax1.set_xlabel('Number of Jobs')
+            ax1.set_ylabel('Client')
+            st.pyplot(fig1)
+            st.write("The bar plot above showcases the number of jobs per client. The length of the bars clearly indicates which clients are bringing in the most work. ")
+            st.write("")  # This adds an empty line
+            st.write("")
+        
+        
+        # Distribution of jobs by type
+        st.sidebar.header("Distribution of Jobs by Type")
+        # Allow user to choose the number of types and specific types
+        selected_num_types = st.sidebar.slider("Select Number of Types", min_value=1, max_value=len(data['Type'].unique()), value=3)
+        selected_types = st.sidebar.multiselect("Select Types of Services", data['Type'].unique(), default=data['Type'].unique()[:selected_num_types])
+
+        # Display an error if no service is selected
+        if not selected_types:
+            st.error("Please choose at least one type.")
+        else:
+            # Filter data based on selected types
+            filtered_data_types = data[data['Type'].isin(selected_types)]
+            type_distribution = filtered_data_types['Type'].value_counts()
+            fig2, ax2 = plt.subplots(figsize=(8, 5))
+            sns.barplot(x= type_distribution.values, y=type_distribution.index, data=filtered_data_types, palette="mako", ax=ax2)
+            ax2.set_title('Distribution of Jobs by Selected Types')
+            ax2.set_xlabel('Type of Service')
+            ax2.set_ylabel('Number of Jobs')
+            ax2.set_xticklabels(ax2.get_xticklabels(), rotation=45)
+            st.pyplot(fig2)
+            st.write("The bar plot above visualizes the distribution of jobs by their type, showing the frequency of each service type offered by the company. ")
+            st.write("")  # This adds an empty line
+            st.write("")
+       
+        
+        # Visualization: Jobs over time
+        # Ensure 'Date' column is in datetime format
+        data['Date'] = pd.to_datetime(data['Date'], errors='coerce')
+        # Creating a new column 'Month' for aggregating data by month
+        data['Month'] = data['Date'].dt.to_period('M')
+        # Aggregating job counts by month
+        jobs_over_time = data.groupby('Month').size()
+        # Visualization: Jobs over time
+        fig3, ax3 = plt.subplots(figsize=(10, 6))
+        jobs_over_time.plot(kind='line', color='blue', ax=ax3)
+        ax3.set_title('Jobs Trend Over Time')
+        ax3.set_xlabel('Month')
+        ax3.set_ylabel('Number of Jobs')
+        st.pyplot(fig3)
         st.write("The line graph above visualizes the trend of jobs over time, aggregated by month. This visualization provides insights into how the demand for the company's services fluctuates throughout the year. ")
         st.write("")  # This adds an empty line
         st.write("")
-        st.image("crew4.png", caption="Pricing Analysis for Different Types of Services", use_column_width=True)
+        
+        # Pricing Analysis for Different Types of Services
+        st.sidebar.header("Pricing Analysis for Different Types of Services")
+        # Correcting the column name for pricing and converting it to numeric
+        data[' Pricing '] = data[' Pricing '].replace('[\$,]', '', regex=True).astype(float)
+        # Allow user to choose number of services and types of services
+        selected_num_services = st.sidebar.slider("Select Number of Services", min_value=1, max_value=len(data['Type'].unique()), value=3)
+        selected_services = st.sidebar.multiselect("Select Services", data['Type'].unique(), default=data['Type'].unique()[:selected_num_services])
+        # Display an error if no service is selected
+        if not selected_services:
+            st.error("Please choose at least one service.")
+        else:
+            # Filter data for the selected services
+            filtered_data_services = data[data['Type'].isin(selected_services)]
+            # Creating a boxplot for Pricing analysis for different types of services with blue color palette
+            fig4, ax4 = plt.subplots(figsize=(8, 6))
+            sns.boxplot(x='Type', y=' Pricing ', data=filtered_data_services, palette="Blues", ax=ax4)
+            ax4.set_title('Pricing Analysis for Selected Types of Services')
+            ax4.set_xlabel('Type of Service')
+            ax4.set_ylabel('Pricing ($)')
+            st.pyplot(fig4)
         st.write("The box plot visualizes the pricing structure for different types of services offered by the company, revealing critical insights into how pricing varies and how it might impact business strategy. ")
         st.write("")  # This adds an empty line
         st.write("")
+        
+    
         st.image("crew5.png", caption="Crew Duration vs. Edit Duration", use_column_width=True)
         st.write("The scatter plot provided shows the relationship between 'Crew Duration' and 'Edit Duration' for various projects or jobs. Understanding the dynamics between crew and edit durations can provide strategic insights into operational efficiency, cost management, and potentially customer satisfaction through faster delivery times. ")
         st.write("")  # This adds an empty line
         st.write("")
+        
+        
         st.image("crew6.png", caption="Client segmentation analysis", use_column_width=True)
         st.write("Distribution of Clients Across Segments: This bar chart presents the number of clients in each of the 'High Value', 'Moderate Value', and 'Low Value' segments. It shows a concentration of clients in the 'Moderate Value' segment. ")
         st.write("")  # This adds an empty line
         st.write("")
+        
+        
         st.image("crew7.png", caption="Average Frequency and Pricing by segment", use_column_width=True)
         st.write("**Average Frequency by Segment**: The bar chart shows the average frequency of transactions for each segment, giving insights into how often clients in each segment engage with the services. ")
         st.write("")  # This adds an empty line
         st.write("")
         st.write("**Average Pricing by Segment**: This bar chart displays the average pricing within each segment, indicating the average spending level of clients in each category. ")
-        
                 
     if menu == "Production EDA":
-
+        data = pd.read_csv("Production-fixed.csv")
         st.markdown(custom_css, unsafe_allow_html=True)
         st.markdown('<p class="title"> Production EDA </p>', unsafe_allow_html=True)
         st.write("")
@@ -149,231 +239,342 @@ def main():
         st.write("The time series graph shows the number of jobs over time for ISOL. From the graph, it appears that the jobs are not evenly distributed over time. There are specific periods where the number of jobs spikes significantly, indicating a much higher workload during these times.")
         st.write("")  # This adds an empty line
         st.write("")
-        st.image("pr2.png", caption="Distribution of Job Types", use_column_width=True)
+        
+        # Sidebar with user input for the Distribution of Job Types
+        st.sidebar.header("Distribution of Job Types")
+        # Allow user to choose the number of job types and specific types
+        selected_num_job_types = st.sidebar.slider("Select Number of Job Types", min_value=1, max_value=len(data['TYPE'].unique()), value=3)
+        selected_job_types = st.sidebar.multiselect("Select Job Types", data['TYPE'].unique(), default=data['TYPE'].unique()[:selected_num_job_types])
+
+        # Display an error if no job type is selected
+        if not selected_job_types:
+            st.error("Please choose at least one job type.")
+        else:
+            # Filter data based on selected job types
+            filtered_data_job_types = data[data['TYPE'].isin(selected_job_types)]
+
+            # Distribution of job types
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.countplot(y='TYPE', data=filtered_data_job_types, order=filtered_data_job_types['TYPE'].value_counts().index)
+            ax.set_title('Distribution of Selected Job Types')
+            ax.set_xlabel('Count')
+            ax.set_ylabel('Job Type')
+            st.pyplot(fig)
         st.write("The bar chart you've provided shows the distribution of job types for the broadcasting company.")
         st.write("")  # This adds an empty line
         st.write("")
+        
         st.image("pr3.png", caption="Top 10 Clients", use_column_width=True)
         st.write("The bar chart presents the distribution of the top clients for the broadcasting company, showing how many times services were provided to each over a given time period.")
         st.write("")  # This adds an empty line
         st.write("")
+        
         st.image("pr4.png", caption="Relationship between Job Duration and Price", use_column_width=True)
         st.write("The scatter plot illustrates the relationship between job duration and price for the broadcasting company's services. ")
         
         
     if menu == "Transmission EDA":
-
+        # Load the data
+        data = pd.read_csv("transmission-clean.csv")
         st.markdown(custom_css, unsafe_allow_html=True)
         st.markdown('<p class="title"> Transmission EDA </p>', unsafe_allow_html=True)
         st.write("")
-        st.image("tr1.png", caption="Frequency of transactions by client", use_column_width=True)
+        # Sidebar with user input for the Frequency of Transactions by Client
+        st.sidebar.header("Frequency of Transactions by Client")
+        # Allow user to choose the number of clients and specific clients
+        selected_num_clients = st.sidebar.slider("Select Number of Clients", min_value=1, max_value=len(data['Client'].unique()), value=5)
+        selected_clients = st.sidebar.multiselect("Select Clients", data['Client'].unique(), default=data['Client'].unique()[:selected_num_clients])
+        # Display an error if no client is selected
+        if not selected_clients:
+            st.error("Please choose at least one client.")
+        else:
+            # Filter data based on selected clients
+            filtered_data_clients = data[data['Client'].isin(selected_clients)]
+
+            # Frequency of transactions by client
+            client_counts = filtered_data_clients['Client'].value_counts()
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.barplot(x=client_counts.index, y=client_counts.values, palette="viridis")
+            ax.set_title('Frequency of Transactions by Selected Clients')
+            ax.set_ylabel('Number of Transactions')
+            ax.set_xlabel('Client')
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+            plt.tight_layout()
+            st.pyplot(fig)
         st.write("Frequency of Transactions by Client: It highlights which clients use the services most frequently. Some clients have significantly higher transaction counts compared to others.")
         st.write("")  # This adds an empty line
+        
+        
         st.write("")
-        st.image("tr2.png", caption="Types of transactions", use_column_width=True)
+       # Sidebar with user input for the Types of Transactions
+        st.sidebar.header("Types of Transactions")
+        # Allow the user to choose the number of transaction types and specific types
+        selected_num_types = st.sidebar.slider("Select Number of Transaction Types", min_value=1, max_value=len(data['Type Of Txn'].unique()), value=3)
+        selected_types = st.sidebar.multiselect("Select Transaction Types", data['Type Of Txn'].unique(), default=data['Type Of Txn'].unique()[:selected_num_types])
+        # Display an error if no transaction type is selected
+        if not selected_types:
+            st.error("Please choose at least one transaction type.")
+        else:
+            # Filter data based on selected transaction types
+            filtered_data_types = data[data['Type Of Txn'].isin(selected_types)]
+            # Calculate the frequency of each type of transaction
+            txn_counts = filtered_data_types['Type Of Txn'].value_counts()
+            # Types of transactions
+            fig, ax = plt.subplots(figsize=(8, 6))
+            sns.barplot(x=txn_counts.index, y=txn_counts.values, palette="rocket")
+            ax.set_title('Types of Selected Transactions', fontsize=14)
+            ax.set_ylabel('Count', fontsize=12)
+            ax.set_xlabel('Type of Transaction', fontsize=12)
+            ax.tick_params(axis='x', rotation=45, labelsize=10)  # Adjusting the font size and rotation for x labels
+            ax.tick_params(axis='y', labelsize=10)
+            plt.tight_layout()
+            st.pyplot(fig)
         st.write("The graph shows specific transaction types like Live Studio Transmission, Space Segment, and others, each represented by a bar indicating its frequency. The variation in the frequency of different transaction types gives insights into how diversified the service offerings are and also reflect client preferences and needs.")
         st.write("")  # This adds an empty line
         st.write("")
+        
+        
         st.image("tr3.png", caption="Duration analysis", use_column_width=True)
         st.write("The histogram shows the frequency of transactions across different duration intervals, The spread of the histogram shows the range of transaction durations. A wide spread indicates a diverse range of service durations, from very short to very long.")
         st.write("")  # This adds an empty line
         st.write("")
-        st.image("tr4.png", caption="Satellite usage", use_column_width=True) 
+        
+        
+        # Sidebar with user input for Satellite Usage Frequency
+        st.sidebar.header("Satellite Usage Frequency")
+        # Allow user to choose the number of satellites and specific satellites
+        selected_num_satellites = st.sidebar.slider("Select Number of Satellites", min_value=1, max_value=len(data['Satellite'].unique()), value=3)
+        selected_satellites = st.sidebar.multiselect("Select Satellites", data['Satellite'].unique(), default=data['Satellite'].unique()[:selected_num_satellites])
+        # Display an error if no satellite is selected
+        if not selected_satellites:
+            st.error("Please choose at least one satellite.")
+        else:
+            # Filter data based on selected satellites
+            filtered_data_satellites = data[data['Satellite'].isin(selected_satellites)]
+
+            # Calculate the frequency of transactions for each satellite
+            satellite_counts = filtered_data_satellites['Satellite'].value_counts()
+
+            # Satellite usage frequency
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.barplot(x=satellite_counts.index, y=satellite_counts.values, palette="mako")
+            ax.set_title('Satellite Usage Frequency', fontsize=14)
+            ax.set_ylabel('Count', fontsize=12)
+            ax.set_xlabel('Satellite', fontsize=12)
+            ax.tick_params(axis='x', rotation=45, labelsize=10)  # Adjusting the font size and rotation for x labels
+            ax.tick_params(axis='y', labelsize=10)
+            plt.tight_layout()
+            st.pyplot(fig)
         st.write("Frequent usage of certain satellites may warrant strategic partnerships or negotiations for better rates or dedicated services. This information is key for strategic decisions regarding technology investments, partnerships with satellite providers, and understanding thelimitations of services")
         st.write("")  # This adds an empty line
         st.write("")
+        
+        
         st.image("tr5.png", caption="Client segmentation analysis", use_column_width=True) 
         st.write("The visualizations provide a detailed view of the client segmentation analysis")
         st.write("Distribution of Clients Across Segments:")
         st.write("The bar graph shows the number of clients in each segment: 'High Value', 'Moderate Value', and 'Low Value'. It's evident that the majority of clients fall into the 'Moderate Value' category, with fewer clients in the 'High Value' and 'Low Value' segments.")
         st.write("")  # This adds an empty line
         st.write("")
+        
+        
         st.image("tr6.png", caption="Average Frequency and Pricing by segment", use_column_width=True) 
         st.write("**Average Frequency by Segment:**")
         st.write("This graph compares the average frequency of transactions for clients in each segment. 'High Value' clients have the highest average frequency, indicating they engage with the services more often.")
         st.write("**Average Pricing by Segment:**")
         st.write("This graph shows the average pricing for each segment.")
-
+        
     if menu == "Crew-Edit Price Prediction":
-            
-            st.markdown(custom_css, unsafe_allow_html=True)
-            st.markdown('<p class="title"> Crew-Edit Price Prediction </p>', unsafe_allow_html=True)
-            def create_format_dataframe(user_choice):
-                # Define the formats
-                all_formats = ['Format_MP4-HD', 'Format_MXF', 'Format_MXF OP1A', 'Format_MXF-HD 50i', 'Format_No format']
-    
-                # Create a dictionary with zeros for all formats
-                data = {format_choice: 0 for format_choice in all_formats}
-    
-                # Set the chosen format to 1
-                data[user_choice] = 1
-    
-                # Create a dataframe from the dictionary
-                df = pd.DataFrame([data])
-                return df
-           
-           
-            def create_access_dataframe(user_choice):
-                # Define the formats
-                all_other_Access = ['Others Acces_No Acces', 'Others Acces_Pro-X', 'Others Acces_Torch']
-    
-                # Create a dictionary with zeros for all formats
-                data = {other_Access_choice: 0 for other_Access_choice in all_other_Access}
-    
-                # Set the chosen format to 1
-                data[user_choice] = 1
-    
-                # Create a dataframe from the dictionary
-                df = pd.DataFrame([data])
-                return df
-            
-            def create_truck_dataframe(user_choice):
-                # Define the formats
-                all_trucks = ['Truck_Nissan Sunny', 'Truck_Nissan X.Trail', 'ruck_Renault Duster', 'Truck_Suzuki Cias', 'Truck_other Truck']
-    
-                # Create a dictionary with zeros for all formats
-                data = {truck_choice: 0 for truck_choice in all_trucks}
-    
-                # Set the chosen format to 1
-                data[user_choice] = 1
-    
-                # Create a dataframe from the dictionary
-                df = pd.DataFrame([data])
-                return df
-            
-            
-            def create_client_dataframe(user_choice):
-                # Define the formats
-                all_clients = ['Client_bbc arabic', 'Client_beirutsat', 'Client_bloomberg asharq', 'Client_byblos medya', 'Client_newstime','Client_priyanka cgtn','Client_russia today']
-    
-                # Create a dictionary with zeros for all formats
-                data = {client_choice: 0 for client_choice in all_clients}
-    
-                # Set the chosen format to 1
-                data[user_choice] = 1
-    
-                # Create a dataframe from the dictionary
-                df = pd.DataFrame([data])
-                return df
-            
-            def display_choice_result(choice):
-                if choice == 1:
-                    st.write("Yes")
-    
-                else:
-                    st.write("No")
-    
-            
-            # Get user input for a binary value (0 or 1) using a slider
-            four_G = st.sidebar.slider("Select 0 or 1 for 4G: ", min_value=0, max_value=1, step=1)
-            st.write("**You chose for the 4G feature:**")
-            display_choice_result(four_G)
-            
-            reporter = st.sidebar.slider("Select 0 or 1 for Reporter: ", min_value=0, max_value=1, step=1)
-            st.write("**You chose for the reporter feature:**")
-            display_choice_result(reporter)
-            
-            crew_Duration = st.sidebar.number_input("Enter a non-negative integer for Crew duration:", min_value=0, step=1)
-            st.write("**You chose for the Crew Duration feature:**")
-            st.write(crew_Duration)
-            
-            edit_Duration = st.sidebar.number_input("Enter a non-negative integer for Edit duration:", min_value=0, step=1)
-            st.write("**You chose for the Edit Duration feature:**")
-            st.write(edit_Duration)
-            
-            daysOfWeek = st.sidebar.slider("Select a number between 0 and 6 for Days of Week:", min_value=0, max_value=6, step=1)
-            # Call the function to display the selected day of the week
-            display_day_of_week(daysOfWeek)
-    
-            
-            report_Duration = st.sidebar.number_input("Enter a non-negative integer for Report duration:", min_value=0, step=1)
-            st.write("**You chose for the Report Duration feature in seconds:**")
-            st.write(report_Duration)
-           
-            client = st.sidebar.selectbox('Client',('Client_bbc arabic','Client_beirutsat','Client_bloomberg asharq','Client_byblos medya','Client_newstime','Client_priyanka cgtn','Client_russia today'))
-            st.write("**You chose for the Client feature:**")
-            st.write(client)
-            df_client= create_client_dataframe(client)
-            #st.write("Encoded Client DataFrame:")
-            #st.write(df_client)
-            
-            truck = st.sidebar.selectbox('Truck',('Truck_Nissan Sunny','Truck_Nissan X.Trail','Truck_Renault Duster','Truck_Suzuki Cias','Truck_other Truck'))
-            st.write("**You chose for the Truck feature:**")
-            st.write(truck)
-            df_truck = create_truck_dataframe(truck)
-            
-            other_Access = st.sidebar.selectbox('Others Access',('Others Acces_No Acces','Others Acces_Pro-X','Others Acces_Torch'))
-            st.write("**You chose for the Other Access feature:**")
-            st.write(other_Access)
-            df_access = create_access_dataframe(other_Access)
-            
-            format = st.sidebar.selectbox('Format',('Format_MP4-HD','Format_MXF','Format_MXF OP1A','Format_MXF-HD 50i','Format_No format'))
-            st.write("**You chose for the Format feature:**")
-            st.write(format)
-            df_format = create_format_dataframe(format)
-            
-            data = { '4G' : four_G,
-                    'Reporter': reporter,
-                     'Crew Duration' : crew_Duration,
-                     'edit duration': edit_Duration,
-                     'DayOfWeek': daysOfWeek,
-                     'Report Duration' : report_Duration,
+        st.markdown(custom_css, unsafe_allow_html=True)
+        st.markdown('<p class="title"> Crew-Edit Price Prediction </p>', unsafe_allow_html=True)
+        def create_format_dataframe(user_choice):
+            # Define the formats
+            all_formats = ['Format_MP4-HD', 'Format_MXF', 'Format_MXF OP1A', 'Format_MXF-HD 50i', 'Format_No format']
+
+            # Create a dictionary with zeros for all formats
+            data = {format_choice: 0 for format_choice in all_formats}
+
+            # Set the chosen format to 1
+            data[user_choice] = 1
+
+            # Create a dataframe from the dictionary
+            df = pd.DataFrame([data])
+            return df
+       
+       
+        def create_access_dataframe(user_choice):
+            # Define the formats
+            all_other_Access = ['Others Acces_No Acces', 'Others Acces_Pro-X', 'Others Acces_Torch']
+
+            # Create a dictionary with zeros for all formats
+            data = {other_Access_choice: 0 for other_Access_choice in all_other_Access}
+
+            # Set the chosen format to 1
+            data[user_choice] = 1
+
+            # Create a dataframe from the dictionary
+            df = pd.DataFrame([data])
+            return df
+        
+        def create_truck_dataframe(user_choice):
+            # Define the formats
+            all_trucks = ['Truck_Nissan Sunny', 'Truck_Nissan X.Trail', 'ruck_Renault Duster', 'Truck_Suzuki Cias', 'Truck_other Truck']
+
+            # Create a dictionary with zeros for all formats
+            data = {truck_choice: 0 for truck_choice in all_trucks}
+
+            # Set the chosen format to 1
+            data[user_choice] = 1
+
+            # Create a dataframe from the dictionary
+            df = pd.DataFrame([data])
+            return df
+        
+        
+        def create_client_dataframe(user_choice):
+            # Define the formats
+            all_clients = ['Client_bbc arabic', 'Client_beirutsat', 'Client_bloomberg asharq', 'Client_byblos medya', 'Client_newstime','Client_priyanka cgtn','Client_russia today']
+
+            # Create a dictionary with zeros for all formats
+            data = {client_choice: 0 for client_choice in all_clients}
+
+            # Set the chosen format to 1
+            data[user_choice] = 1
+
+            # Create a dataframe from the dictionary
+            df = pd.DataFrame([data])
+            return df
+        
+        def display_choice_result(choice):
+            if choice == 1:
+                st.write("Yes")
+
+            else:
+                st.write("No")
+
+        
+        # Get user input for a binary value (0 or 1) using a slider
+        four_G = st.sidebar.slider("Select 0 or 1 for 4G: ", min_value=0, max_value=1, step=1)
+        st.write("**You chose for the 4G feature:**")
+        display_choice_result(four_G)
+        
+        reporter = st.sidebar.slider("Select 0 or 1 for Reporter: ", min_value=0, max_value=1, step=1)
+        st.write("**You chose for the reporter feature:**")
+        display_choice_result(reporter)
+        
+        crew_Duration = st.sidebar.number_input("Enter a non-negative integer for Crew duration:", min_value=0, step=1)
+        st.write("**You chose for the Crew Duration feature:**")
+        st.write(crew_Duration)
+        
+        edit_Duration = st.sidebar.number_input("Enter a non-negative integer for Edit duration:", min_value=0, step=1)
+        st.write("**You chose for the Edit Duration feature:**")
+        st.write(edit_Duration)
+        
+        daysOfWeek = st.sidebar.slider("Select a number between 0 and 6 for Days of Week:", min_value=0, max_value=6, step=1)
+        # Call the function to display the selected day of the week
+        display_day_of_week(daysOfWeek)
+
+        
+        report_Duration = st.sidebar.number_input("Enter a non-negative integer for Report duration:", min_value=0, step=1)
+        st.write("**You chose for the Report Duration feature in seconds:**")
+        st.write(report_Duration)
+       
+        client = st.sidebar.selectbox('Client',('Client_bbc arabic','Client_beirutsat','Client_bloomberg asharq','Client_byblos medya','Client_newstime','Client_priyanka cgtn','Client_russia today'))
+        st.write("**You chose for the Client feature:**")
+        st.write(client)
+        df_client= create_client_dataframe(client)
+        #st.write("Encoded Client DataFrame:")
+        #st.write(df_client)
+        
+        truck = st.sidebar.selectbox('Truck',('Truck_Nissan Sunny','Truck_Nissan X.Trail','Truck_Renault Duster','Truck_Suzuki Cias','Truck_other Truck'))
+        st.write("**You chose for the Truck feature:**")
+        st.write(truck)
+        df_truck = create_truck_dataframe(truck)
+        #st.write("Encoded Truck DataFrame:")
+        #st.write(df_truck)
+        
+        other_Access = st.sidebar.selectbox('Others Access',('Others Acces_No Acces','Others Acces_Pro-X','Others Acces_Torch'))
+        st.write("**You chose for the Other Access feature:**")
+        st.write(other_Access)
+        df_access = create_access_dataframe(other_Access)
+        #st.write("Encoded Access DataFrame:")
+        #st.write(df_access)
+        
+        format = st.sidebar.selectbox('Format',('Format_MP4-HD','Format_MXF','Format_MXF OP1A','Format_MXF-HD 50i','Format_No format'))
+        st.write("**You chose for the Format feature:**")
+        st.write(format)
+        df_format = create_format_dataframe(format)
+        #st.write("Encoded Format DataFrame:")
+        #st.write(df_format)
+        
+        
+        data = { '4G' : four_G,
+                'Reporter': reporter,
+                 'Crew Duration' : crew_Duration,
+                 'edit duration': edit_Duration,
+                 'DayOfWeek': daysOfWeek,
+                 'Report Duration' : report_Duration,
+                 
+                 'Client_bbc arabic': df_client.iloc[0, 0],
+                 'Client_beirutsat':df_client.iloc[0, 1], 
+                 'Client_bloomberg asharq':df_client.iloc[0, 2],
+                 'Client_byblos medya': df_client.iloc[0, 3],
+                 'Client_newstime': df_client.iloc[0, 4], 
+                 'Client_priyanka cgtn': df_client.iloc[0, 5],
+                 'Client_russia today': df_client.iloc[0, 6],
                      
-                     'Client_bbc arabic': df_client.iloc[0, 0],
-                     'Client_beirutsat':df_client.iloc[0, 1], 
-                     'Client_bloomberg asharq':df_client.iloc[0, 2],
-                     'Client_byblos medya': df_client.iloc[0, 3],
-                     'Client_newstime': df_client.iloc[0, 4], 
-                     'Client_priyanka cgtn': df_client.iloc[0, 5],
-                     'Client_russia today': df_client.iloc[0, 6],
-                         
-                     'Truck_Nissan Sunny': df_truck.iloc[0, 0],
-                     'Truck_Nissan X.Trail': df_truck.iloc[0, 1],
-                     'Truck_Renault Duster': df_truck.iloc[0, 2],
-                     'Truck_Suzuki Cias': df_truck.iloc[0, 3],
-                     'Truck_other Truck': df_truck.iloc[0, 4],
-                     
-                     'Others Acces_No Acces':df_access.iloc[0, 0],
-                     'Others Acces_Pro-X':df_access.iloc[0, 1],
-                     'Others Acces_Torch': df_access.iloc[0, 2],
-                     
-                     'Format_MP4-HD': df_format.iloc[0, 0],
-                     'Format_MXF': df_format.iloc[0, 1],
-                     'Format_MXF OP1A': df_format.iloc[0, 2],
-                     'Format_MXF-HD 50i': df_format.iloc[0, 3],
-                     'Format_No format': df_format.iloc[0, 4]
-                          
-            }
-            features = pd.DataFrame(data,index = [0])
+                 'Truck_Nissan Sunny': df_truck.iloc[0, 0],
+                 'Truck_Nissan X.Trail': df_truck.iloc[0, 1],
+                 'Truck_Renault Duster': df_truck.iloc[0, 2],
+                 'Truck_Suzuki Cias': df_truck.iloc[0, 3],
+                 'Truck_other Truck': df_truck.iloc[0, 4],
+                 
+                 'Others Acces_No Acces':df_access.iloc[0, 0],
+                 'Others Acces_Pro-X':df_access.iloc[0, 1],
+                 'Others Acces_Torch': df_access.iloc[0, 2],
+                 
+                 'Format_MP4-HD': df_format.iloc[0, 0],
+                 'Format_MXF': df_format.iloc[0, 1],
+                 'Format_MXF OP1A': df_format.iloc[0, 2],
+                 'Format_MXF-HD 50i': df_format.iloc[0, 3],
+                 'Format_No format': df_format.iloc[0, 4]
+                      
+        }
+        features = pd.DataFrame(data,index = [0])
+        #st.write(features)
+        
+        crew_edit_raw= pd.read_csv('crew-edit-preprocessed.csv')
+        #st.write(crew_edit_raw.head(1))
+        crew_edit_raw.drop(columns=['Unnamed: 0'], inplace=True)
+        # Display the first row of the dataset
+        #st.write("First Row of the Dataset:")
+        #st.write(crew_edit_raw.head(1))
+        crew_edit = crew_edit_raw.drop(columns=['Price'])
+        #st.write("First Row of the Dataset after removing price column:")
+        #st.write(crew_edit.head(1))
+        df = pd.concat([features,crew_edit],axis=0)
+        df = df.fillna(0)
+        #st.write("First Row of the Dataset after combining:")
+        #st.write(df.head(1))
+        #st.write(df.tail(1))
+
+        
+        # Reads in saved classification model
+        load_clf = pickle.load(open('best_rf_reg.pkl', 'rb'))
+        
+        # Apply model to make predictions
+        prediction = load_clf.predict(df) 
+        
+        # Extract the predicted price
+        predicted_price = prediction[0]
+
+        # Display the extracted predicted price
+        st.write("")
+        st.write("**Your Predicted Price for Crew-Edit chosen the above features is:**")
+        st.write(predicted_price)
 
             
-            crew_edit_raw= pd.read_csv('crew-edit-preprocessed.csv')
-
-            crew_edit_raw.drop(columns=['Unnamed: 0'], inplace=True)
-
-  
-
-            crew_edit = crew_edit_raw.drop(columns=['Price'])
-
-
-            df = pd.concat([features,crew_edit],axis=0)
-            df = df.fillna(0)
-            
-            # Reads in saved classification model
-            load_clf = pickle.load(open('best_rf_reg.pkl', 'rb'))
-            
-            # Apply model to make predictions
-            prediction = load_clf.predict(df) 
-            
-            # Extract the predicted price
-            predicted_price = prediction[0]
-    
-            # Display the extracted predicted price
-            st.write("")
-            st.write("**Your Predicted Price for Crew-Edit chosen the above features is:**")
-            st.write(predicted_price)
-    
-                
     if menu == "Production Price Prediction":
         
         def display_choice_result(choice):
@@ -506,6 +707,8 @@ def main():
         st.write("**You chose for the Client feature:**")
         st.write(Client)
         df_client = create_client_dataframe(Client)
+        #st.write("Encoded client DataFrame:")
+        #st.write(df_client)
         
         Distance_Category = st.sidebar.slider("Select a number between 0 and 2 for Distance_Category:", min_value=0, max_value=2, step=1)
         st.write(f"**You chose {Distance_Category} for the Distance_Category feature:**")
@@ -552,16 +755,24 @@ def main():
                       
         }
         features = pd.DataFrame(data,index = [0])
+        #st.write(features)
         
         production_raw= pd.read_csv('production-preprocessed.csv')
-
+        #st.write(production_raw.head(1))
         production_raw.drop(columns=['Unnamed: 0'], inplace=True)
-        
+        # Display the first row of the dataset
+        #st.write("First Row of the Dataset:")
+        #st.write(production_raw.head(1))
         production = production_raw.drop(columns=['Price'])
-
+        #st.write("First Row of the Dataset after removing price column:")
+        #st.write(production.head(1))
         df = pd.concat([features,production],axis=0)
         df = df.fillna(0)
- 
+        #st.write("First Row of the Dataset after combining:")
+        #st.write(df.head(1))
+        #st.write(df.tail(1))
+
+        
         # Reads in saved classification model
         load_clf = pickle.load(open('best_ridge_reg_production.pkl', 'rb'))
         
@@ -778,19 +989,27 @@ def main():
         st.write("**You chose for the Txp feature:**")
         st.write(Txp)
         df_Txp = create_txp_dataframe(Txp)
+        #st.write("Encoded Txp DataFrame:")
+        #st.write(df_Txp)
         
+
         Camera = st.sidebar.selectbox('Camera',('Camera_Canon C305','Camera_Canon XF305','Camera_Sony HDV270','Camera_Sony S150','Camera_Sony XDcam'
                                         ,'Camera_Sony XDcam X150','Camera_Sony XDcam X190','Camera_Sony XDcam X320'))
         
+
         st.write("**You chose for the Camera feature:**")
         st.write(Camera)
         df_Camera = create_camera_dataframe(Camera)
+        #st.write("Encoded Camera DataFrame:")
+        #st.write(df_Camera)
         
         Sat_Charges = st.sidebar.selectbox('Sat Charges',('Sat Charges Paid_ISOL','Sat Charges Paid_No Sat Charges'))
 
         st.write("**You chose for the Sat Charges feature:**")
         st.write(Sat_Charges)
         df_Sat_Charges = create_sat_charges_dataframe(Sat_Charges)
+        #st.write("Encoded Sat Charges DataFrame:")
+        #st.write(df_Sat_Charges)
         
         
         data = { 'Client' : Client,
@@ -845,14 +1064,24 @@ def main():
                       
         }
         features = pd.DataFrame(data,index = [0])
-
+        #st.write(features)
+        
         transmission_raw= pd.read_csv('transmission-preprocessed.csv')
+        #st.write(transmission_raw.head(1))
         transmission_raw.drop(columns=['Unnamed: 0'], inplace=True)
+        #Display the first row of the dataset
+        #st.write("First Row of the Dataset:")
+        #st.write(transmission_raw.head(1))
         transmission = transmission_raw.drop(columns=['Pricing'])
-
+        #st.write("First Row of the Dataset after removing price column:")
+        #st.write(transmission.head(1))
         df = pd.concat([features,transmission],axis=0)
         df = df.fillna(0)
+        #st.write("First Row of the Dataset after combining:")
+        #st.write(df.head(1))
+        #st.write(df.tail(1))
 
+        
         # Reads in saved classification model
         load_clf = pickle.load(open('best_rf_reg_transmission.pkl', 'rb'))
         
