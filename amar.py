@@ -3,7 +3,7 @@ import pandas as pd
 import pickle
 import os
 from sklearn.ensemble import RandomForestClassifier
-import matplotlib.pyplot as plt
+import matplotlib as plt
 import seaborn as sns
 
 # Define custom CSS styles
